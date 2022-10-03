@@ -51,6 +51,9 @@ contador_raw['Timestamp'] = contador_raw["Fecha"] + " " + contador_raw["Hora"]
 
 contador_raw['Timestamp'] = pd.to_datetime(contador_raw['Timestamp'], dayfirst=True)
 
+contador_raw.replace({"Right2":"Right"},inplace=True)   #Rename sensor Right 2 as Right
+contador_raw.drop_duplicates(subset=['Timestamp','Sensor'],keep='first',inplace=True) #So if they got medition at the same time we remove
+
 time_list = generateTimeSeriesByHour(contador_raw, endHour=major)
 zeroList = pd.Series(np.zeros(len(time_list)))
 
