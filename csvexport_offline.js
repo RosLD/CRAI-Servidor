@@ -76,14 +76,13 @@ const getInt = () => {
 
 let content = {}
 
+/*
 const door = () => {
 
     pcount_trg_t = pcount_trg+getInt()+"-"+getHora()+".csv";
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
 
-    /*var db = client.db("CRAI-UPCT");
-    var collection = db.collection("DoorSensors");*/    //var query = {"date": {"$gte": new Date(`${isodate()}Z05:00:00.000T`), "$lt": new Date(`${isodate()}Z20:00:00.000T`)}};//, "$lt": `${getFecha()} 22:00:00`
     var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};//, "$lt": `${getFecha()} 22:00:00`
     var cursor = puertadatos.find(query).sort({"timestamp":1});
     
@@ -107,11 +106,11 @@ const door = () => {
 
         
     
-}
+}*/
 
 const wifi = () => {
 
-    wifi_trg_t = wifi_trg+getInt()+"-"+getHora()+".csv";
+    wifi_trg_t = wifi_trg+getFecha()+".csv";
 
     fs.writeFile(wifi_trg_t, cabecerawifi, { flag: 'w' }, err => {});
 
@@ -146,7 +145,7 @@ const wifi = () => {
 
 const ble = () => {
 
-    ble_trg_t = ble_trg+getInt()+"-"+getHora()+".csv";
+    ble_trg_t = ble_trg+getFecha()+".csv";
     
     fs.writeFile(ble_trg_t, cabecerable, { flag: 'w' }, err => {});
 
@@ -180,17 +179,17 @@ const ble = () => {
 }
 
 const main = () => {
-    door();
+    //door();
     wifi();
     ble();
 
     
-    exec(`python3.8 ./python/hd_PCprocess.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
-        if(error !== null){
-            console.log("Python error PC-> "+ error)
-        }
-        console.log(stdout.toString())
-    })
+    //exec(`python3.8 ./python/hd_PCprocess.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
+    //    if(error !== null){
+    //        console.log("Python error PC-> "+ error)
+    //    }
+    //    console.log(stdout.toString())
+    //})
     
     
     exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{
@@ -212,8 +211,8 @@ const main = () => {
 }
 
 
-
-
+main()
+/*
 var job = new CronJob(
     '00 22 * * *',
     //'00 00 22 * * *',
@@ -222,5 +221,5 @@ var job = new CronJob(
 
 console.log("Starting CRON job");
 job.start()
-
+*/
 
