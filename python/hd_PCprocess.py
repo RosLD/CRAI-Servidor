@@ -62,8 +62,11 @@ contador = pd.DataFrame(
 
 cuenta = 0
 for index, row in contador.iterrows():
+    if row['Sensor'] == "KeepAlive":
+        continue
+    
     m = row['Timestamp'].strftime("%Y-%m-%d %H:%M:59")
-
+    
     sel = contador_raw[contador_raw['Timestamp'] > row['Timestamp']]
     sel = sel[sel['Timestamp'] < m]
     for i in sel['Evento In-Out(1/0)']:
