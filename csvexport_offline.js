@@ -219,8 +219,7 @@ const main = () => {
 
 }
 
-main()
-/*
+
 var job = new CronJob(
     '00 22 * * *',
     //'00 00 22 * * *',
@@ -229,5 +228,5 @@ var job = new CronJob(
 
 console.log("Starting CRON job");
 job.start()
-*/
+
 
