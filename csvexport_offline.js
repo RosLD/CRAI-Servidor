@@ -76,10 +76,10 @@ const getInt = () => {
 
 let content = {}
 
-/*
+
 const door = () => {
 
-    pcount_trg_t = pcount_trg+getInt()+"-"+getHora()+".csv";
+    pcount_trg_t = pcount_trg+getFecha()+".csv";
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
 
@@ -106,7 +106,7 @@ const door = () => {
 
         
     
-}*/
+}
 
 const wifi = () => {
 
@@ -127,7 +127,7 @@ const wifi = () => {
     cursor.forEach(
         function(doc) {
             if(doc.timestamp !== undefined){
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.id};${doc.canal};${doc.ssid};${doc.OrigMAC};${doc.rssi};${doc.rate};${doc.htccap};${doc.vendorspecific};${doc.extendedrates};${doc.extendedhtc};${doc.vhtcap}\r\n`
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.id};${doc.canal};"${doc.ssid}";${doc.OrigMAC};${doc.rssi};${doc.rate};${doc.htccap};${doc.vendorspecific};${doc.extendedrates};${doc.extendedhtc};${doc.vhtcap}\r\n`
                 fs.writeFile(wifi_trg_t, content, { flag: 'a' }, err => {});
             
             }
@@ -179,7 +179,7 @@ const ble = () => {
 }
 
 const main = () => {
-    //door();
+    door();
     wifi();
     ble();
 
@@ -197,6 +197,15 @@ const main = () => {
             console.log("Python error BLE-> "+ error)
         }
         console.log(stdout.toString())
+        console.log(stderr.toString())
+    })
+
+    exec(`python3.8 ./python/hd_offlinewifi.py ${wifi_trg_t} ${pcount_trg_t}`,(error,stdout,stderr)=>{
+        if(error !== null){
+            console.log("Python error Wifi-> "+ error)
+        }
+        console.log(stdout.toString())
+        console.log(stderr.toString())
     })
 
 
@@ -210,8 +219,8 @@ const main = () => {
 
 }
 
-
-
+main()
+/*
 var job = new CronJob(
     '00 22 * * *',
     //'00 00 22 * * *',
@@ -220,5 +229,5 @@ var job = new CronJob(
 
 console.log("Starting CRON job");
 job.start()
-
+*/
 

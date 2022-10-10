@@ -97,7 +97,7 @@ while go:
                 data = [nseq, time.strftime('%Y-%m-%d', time.localtime()) + " " + desde_tiempo, row['Id'],
                         row['Fecha'] + " " + row['Hora'], 1, row['MAC'], row['Tipo MAC'], row['Tipo ADV'],
                         row['ADV Size'], row['RSP Size'], row['Advertisement'], row['RSSI']]
-                datos_filtrados = datos_filtrados.append(pd.Series(data, index=filter_cols), ignore_index=True)
+                datos_filtrados = pd.concat([datos_filtrados, pd.DataFrame([data], columns=filter_cols)], ignore_index=True)
 
     # Now save in csv
     datos_filtrados['RSSI promedio'] = datos_filtrados['RSSI promedio'] / datos_filtrados['Nº Mensajes']

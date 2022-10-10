@@ -103,7 +103,7 @@ const door = () => {
 
     
     
-    console.log("Person count data saved");
+    console.log("PC data saved: ",pcount_trg_t);
 
         
     
@@ -122,7 +122,6 @@ const wifi = () => {
     
     cursor.sort({timestamp:1}).allowDiskUse();
 
-    console.log(`Saving Wifi data of the day`)
 
     
     cursor.forEach(
@@ -138,7 +137,7 @@ const wifi = () => {
 
     
     
-    console.log("Wifi data saved");
+    console.log("Wifi data saved: ",wifi_trg_t);
         
    
 }
@@ -156,7 +155,7 @@ const ble = () => {
     
     cursor.sort({timestamp:1}).allowDiskUse();
     
-    console.log(`Saving BLE data of the day`)
+    
 
     cursor.forEach(
         function(doc) {
@@ -175,7 +174,7 @@ const ble = () => {
     //fs.writeFile(ble_trg_t,"END-OF-LINE",{flag:'a'}, err => {})
     
      
-    console.log("BLE data saved");
+    console.log("BLE data saved: ",ble_trg_t);
 
 }
 
@@ -200,6 +199,14 @@ const main = () => {
         console.log(stdout.toString())
         console.log(stderr.toString())
     })
+
+    //exec(`python3.8 ./python/hd_wifi.py ${wifi_trg_t}`,(error,stdout,stderr)=>{
+    //    if(error !== null){
+    //        console.log("Python error Wifi-> "+ error)
+    //    }
+    //    console.log(stdout.toString())
+    //    console.log(stderr.toString())
+    //})
 
 
 

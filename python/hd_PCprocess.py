@@ -53,6 +53,8 @@ contador_raw['Timestamp'] = pd.to_datetime(contador_raw['Timestamp'], dayfirst=T
 
 contador_raw.replace({"Right2":"Right"},inplace=True)   #Rename sensor Right 2 as Right
 contador_raw.drop_duplicates(subset=['Timestamp','Sensor'],keep='first',inplace=True) #So if they got medition at the same time we remove
+#Remove keep alives
+#contador_raw = contador_raw[contador_raw['Sensor']!="KeepAlive"]
 
 time_list = generateTimeSeriesByHour(contador_raw, endHour=major)
 zeroList = pd.Series(np.zeros(len(time_list)))
@@ -62,8 +64,7 @@ contador = pd.DataFrame(
 
 cuenta = 0
 for index, row in contador.iterrows():
-    if row['Sensor'] == "KeepAlive":
-        continue
+    
     
     m = row['Timestamp'].strftime("%Y-%m-%d %H:%M:59")
     
@@ -77,7 +78,9 @@ for index, row in contador.iterrows():
             if cuenta < 0:
                 cuenta = 0
     contador.iloc[index,contador.columns.get_loc("personCount")]= cuenta
-contador.to_csv("csv/int/csv_online_filter/"+time.strftime("%Y-%m-%d")+"_contador.csv",sep=';',index=False,mode='w',header=True)
+
+file_dst = "csv/int/csv_online_filter/"+time.strftime("%Y-%m-%d")+"_contador.csv"
+contador.to_csv(file_dst,sep=';',index=False,mode='w',header=True)
 
 pc = contador.iloc[-1]['personCount']
 
@@ -88,3 +91,6 @@ val = ("Raspberry6", pc, major)
 mycursor.execute(sql, val)
 
 mydb.commit()
+
+
+#os.system(f"python3.8 python/hd_wifi.py {file_dst} {direccion}")
