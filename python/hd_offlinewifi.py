@@ -63,10 +63,11 @@ datos_contador_pure = pd.DataFrame(
     {'Timestamp': datos_contador['Timestamp'], 'personCount': a})
 
 #print(datos_contador_pure)
+kamac = ["01:01:01:01:01:01","06:06:06:06:06:06","11:11:11:11:11:11"]
 
 for index,row in datos_wifi.iterrows():
 
-    if row['SSID'] != "KeepAlive":
+    if row['MAC Origen'] not in kamac :
 
         if row['Id'] == "Raspberry A":
             nRA += 1
@@ -80,10 +81,14 @@ for index,row in datos_wifi.iterrows():
             nRE += 1
 
     else:
-        pc = datos_contador_pure[datos_contador_pure['Timestamp'] < datos_wifi['Timestamp'][index]]['personCount'].iloc[-1]
+        pc = 0
+        try:
+            pc = datos_contador_pure[datos_contador_pure['Timestamp'] < datos_wifi['Timestamp'][index]]['personCount'].iloc[-1]
+        except:
+            pc = 0
         auxst = f"RA:{nRA},RB:{nRB},RC:{nRC},RD:{nRD},RE:{nRE},PC:{pc}"
         nRA = nRB = nRC = nRD = nRE = 0
-        datos_wifi.iloc[index,datos_wifi.columns.get_loc("MAC Origen")] = auxst
+        datos_wifi.iloc[index,datos_wifi.columns.get_loc("SSID")] = auxst
 
 print(datos_wifi)
 print("Saving results")
