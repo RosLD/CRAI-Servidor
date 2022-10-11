@@ -31,9 +31,8 @@ print(f'Hora inicio: {hora_inicio}')
 
 # Para localizar los CSVs
 # nombre_target = #"/home/servidoridiit1upct/CRAI-Servidor/csv/ble_"+time.strftime('%Y-%m-%d', time.localtime())+"_7-22.csv" #Nombre del archivo
-nombre_filter = "./csv/off/csv_offline_filter/ble_filter_" + time.strftime('%Y-%m-%d',
-                                                                           time.localtime()) + "_samp" + str(
-    sampling) + ".csv"
+nombre_filter = "./csv/off/csv_offline_filter/ble-filter-clean-P_" + time.strftime('%Y-%m-%d',
+                                                                           time.localtime()) + ".csv"
 filter_cols = ['Indice int. muestreo', 'Timestamp int.', 'Raspberry', 'Timestamp inicial', 'Nº Mensajes', 'MAC',
                'Tipo MAC', 'Tipo ADV', 'BLE Size', 'RSP Size', 'BLE Data', 'RSSI promedio']
 nombre_lista = "./python/doc/mac_filter.csv"

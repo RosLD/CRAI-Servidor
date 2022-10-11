@@ -10,8 +10,8 @@ import numpy as np
 wifi_file = sys.argv[1]
 contador_src = sys.argv[2]#"csv/int/csv_online_filter/"+time.strftime("%Y-%m-%d")+"_contador.csv"
 
-trg_file = "csv/off/csv_offline_filter/"+time.strftime("%Y-%m-%d")+"_wifi.csv"
-trg_file2 = "csv/off/csv_offline_filter/"+time.strftime("%Y-%m-%d")+"_pcount.csv"
+trg_file = "csv/off/csv_offline_filter/"+time.strftime("%Y-%m-%d")+"_wifi_clean.csv"
+trg_file2 = "csv/off/csv_offline_filter/"+time.strftime("%Y-%m-%d")+"_pcount_clean.csv"
 
 fsize = os.path.getsize(wifi_file)
 print(fsize)
@@ -20,7 +20,7 @@ while fsize == 107:
     fsize = os.path.getsize(wifi_file)
     time.sleep(10)
 
-datos_wifi = pd.read_csv(wifi_file, sep=';')
+datos_wifi = pd.read_csv(wifi_file, sep=';',error_bad_lines=False)
 
 datos_contador = pd.read_csv(contador_src,sep=";")
 
@@ -93,5 +93,6 @@ for index,row in datos_wifi.iterrows():
 print(datos_wifi)
 print("Saving results")
 datos_wifi.to_csv(trg_file,";",index=False,mode="w")
+datos_contador_pure.to_csv(trg_file2,";",index=False,mode='w')
 
 datos_contador_pure.to_csv(trg_file2,";",index=False,mode="w")

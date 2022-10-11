@@ -208,17 +208,9 @@ const main = () => {
         console.log(stderr.toString())
     })
 
-
-
-    
-    
-
-    
-
     
 
 }
-
 
 
 var job = new CronJob(
