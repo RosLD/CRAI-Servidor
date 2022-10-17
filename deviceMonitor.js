@@ -1,6 +1,8 @@
 var request = require('request');
 const botcrai = require('./models/bot_tel')
 const database = require('./models/database')
+var CronJob = require('cron').CronJob;
+
 require("dotenv").config();
 
 const nsen = database.getCollection("SensorManagement")
@@ -160,9 +162,13 @@ const main2 = () => {
 
 
 main()
-main2()
+//main2()
 
-setInterval(() => {
-    main()
-    main2()
-},1000*60*10)
+var job = new CronJob(
+    `0,5,10,15,20,25,30,35,40,45,50,55 7-22 * * *`,
+    //'00 00 22 * * *',
+    main
+);
+
+console.log("Starting CRON job");
+job.start()

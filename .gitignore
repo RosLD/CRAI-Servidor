@@ -8,6 +8,7 @@ package-lock.json
 ownexport.js
 csv_filter
 ignore.py
+ignore.ipynb
 __pycache__
 certs
 ignore.js

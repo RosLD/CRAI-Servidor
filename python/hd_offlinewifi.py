@@ -95,4 +95,8 @@ print("Saving results")
 datos_wifi.to_csv(trg_file,";",index=False,mode="w")
 datos_contador_pure.to_csv(trg_file2,";",index=False,mode='w')
 
-datos_contador_pure.to_csv(trg_file2,";",index=False,mode="w")
+ble_file = wifi_file.split("wifi")[0]+"ble"+wifi_file.split("wifi")[1]
+
+
+#time.sleep(60*10)   #Give BLE a break
+os.system(f"python3.8 python/hd_offlineBLE.py {ble_file} {trg_file2}")

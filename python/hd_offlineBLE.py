@@ -5,6 +5,8 @@ import os
 
 nombre_target = sys.argv[1]
 
+pcount_file = sys.argv[2]
+
 fsize = os.path.getsize(nombre_target)
 
 while fsize == 74:
@@ -39,6 +41,7 @@ nombre_lista = "./python/doc/mac_filter.csv"
 nseq = 0
 
 datos_ble = pd.read_csv(nombre_target, sep=';')
+datos_pc = pd.read_csv(pcount_file,sep = ";")
 
 desde_hora = 7
 hasta_hora = 7
@@ -49,6 +52,13 @@ hasta = desde + sampling
 if sampling == 60:
     hasta_hora = 8
     hasta = 0
+
+datos_ble.replace(
+    {"Raspberry1": "Raspberry A", "Raspberry2": "Raspberry D", "Raspberry3": "Raspberry B", "Raspberry5": "Raspberry E",
+     "Raspberry7": "Raspberry C"}, inplace=True)
+
+
+nRA = nRB = nRC = nRD = nRE = 0
 
 go = True
 
@@ -81,31 +91,55 @@ while go:
 
     # Start filtering
     for index, row in aux.iterrows():
+        
         if not (lista_filtro['MAC'] == row['MAC']).any():
             if ((datos_filtrados['Raspberry'] == row['Id']) & (datos_filtrados['MAC'] == row['MAC']) & (
                     datos_filtrados['BLE Data'] == row['Advertisement'])).any():
-
                 indice = datos_filtrados.loc[
                     (datos_filtrados['Raspberry'] == row['Id']) & (datos_filtrados['MAC'] == row['MAC']) & (
                                 datos_filtrados['BLE Data'] == row['Advertisement'])].index[0]
-
                 datos_filtrados.at[indice, 'Nº Mensajes'] += 1
                 datos_filtrados.at[indice, 'RSSI promedio'] += row['RSSI']
-
             else:
                 data = [nseq, time.strftime('%Y-%m-%d', time.localtime()) + " " + desde_tiempo, row['Id'],
                         row['Fecha'] + " " + row['Hora'], 1, row['MAC'], row['Tipo MAC'], row['Tipo ADV'],
                         row['ADV Size'], row['RSP Size'], row['Advertisement'], row['RSSI']]
                 datos_filtrados = pd.concat([datos_filtrados, pd.DataFrame([data], columns=filter_cols)], ignore_index=True)
-
+        
     # Now save in csv
     datos_filtrados['RSSI promedio'] = datos_filtrados['RSSI promedio'] / datos_filtrados['Nº Mensajes']
 
+    for index, row in datos_filtrados.iterrows():
+
+        if row['MAC'] != "00:00:00:00:00:00":
+
+            if row['Raspberry'] == "Raspberry A":
+                nRA += 1
+            elif row['Raspberry'] == "Raspberry B":
+                nRB += 1
+            elif row['Raspberry'] == "Raspberry C":
+                nRC += 1
+            elif row['Raspberry'] == "Raspberry D":
+                nRD += 1
+            elif row['Raspberry'] == "Raspberry E":
+                nRE += 1
+        else:
+            pc = 0
+
+            try:
+                pc = datos_pc[datos_pc['Timestamp'] < row['Timestamp'][index]]['personCount'].iloc[-1]
+            except:
+                pc = 0
+            
+            auxst = f"RA:{nRA},RB:{nRB},RC:{nRC},RD:{nRD},RE:{nRE},PC:{pc}"
+            datos_filtrados.iloc[index,datos_filtrados.columns.get_loc("BLE Data")] = auxst
+            nRA = nRB = nRC = nRD = nRE = 0
+
     if nseq == 1:
-        print("first time")
+        
         datos_filtrados.to_csv(nombre_filter, sep=';', index=False)
     else:
-        print()
+        
         datos_filtrados.to_csv(nombre_filter, sep=';', mode='a', header=False, index=False)
 
     print(f'Intervalos escritos: {nseq}/{final}')
@@ -113,5 +147,10 @@ while go:
     if desde_hora == 22:
         go = False
 
+
+
+
 hora_fin = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 print(f'Filtrado y limpieza acabado, hora: {hora_fin}')
+
+
