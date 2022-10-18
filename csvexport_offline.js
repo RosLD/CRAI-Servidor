@@ -184,12 +184,12 @@ const main = () => {
     ble();
 
     
-    //exec(`python3.8 ./python/hd_PCprocess.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
-    //    if(error !== null){
-    //        console.log("Python error PC-> "+ error)
-    //    }
-    //    console.log(stdout.toString())
-    //})
+    exec(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
+        if(error !== null){
+            console.log("Python error PC-> "+ error)
+        }
+        console.log(stdout.toString())
+    })
     
     /*
     exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{
@@ -199,14 +199,14 @@ const main = () => {
         console.log(stdout.toString())
         console.log(stderr.toString())
     })*/
-
+    /*
     exec(`python3.8 ./python/hd_offlinewifi.py ${wifi_trg_t} ${pcount_trg_t}`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error Wifi-> "+ error)
         }
         console.log(stdout.toString())
         console.log(stderr.toString())
-    })
+    })*/
 
     
 
