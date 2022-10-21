@@ -21,7 +21,7 @@ const bledatos = database.getCollection('BLE2')
 const wifidatos = database.getCollection('wifi')
 
 //let cabecera = 'Fecha;Hora;Evento In-Out(1/0);Cont. D-In total;Cont. I-In total;Total IN;Cont. D-out total;Cont. I-Out total;Total OUT;Estimación nº Personas\r\n'
-let cabeceradoor = 'Fecha;Hora;Sensor;Evento In-Out(1/0);Entradas Derecha;Salidas Derecha;Entradas Izquierda;Salidas Izquierda;Entradas Derecha 2;Salidas Derecha 2\r\n'
+let cabeceradoor = 'Fecha;Hora;NSeq;Sensor;Evento In-Out(1/0);Entradas Derecha;Salidas Derecha;Entradas Izquierda;Salidas Izquierda;Entradas Derecha 2;Salidas Derecha 2;Ocupacion estimada\r\n'
 let cabecerawifi = 'Fecha;Hora;Id;Canal;SSID;MAC Origen;RSSI;Rate;HTC Cap;Vendor Specific;Extended Rates;Extended HTC;VHT Cap\r\n'
 
 let cabecerable = 'Fecha;Hora;Id;MAC;Tipo MAC;ADV Size;RSP Size;Tipo ADV;Advertisement;RSSI\r\n'
@@ -83,7 +83,8 @@ const door = () => {
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
 
-    var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};//, "$lt": `${getFecha()} 22:00:00`
+    //var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};//, "$lt": `${getFecha()} 22:00:00`
+    var query = {"timestamp": {"$gte": `2022-10-19 07:00:00`, "$lt": `2022-10-19 22:00:00`}}
     var cursor = puertadatos.find(query).sort({"timestamp":1});
     
     
@@ -92,7 +93,7 @@ const door = () => {
         function(doc) {
             
             if(doc.timestamp !== undefined){
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.sensor};${doc.eventoIO ? 1 : 0};${doc.entradasSensorDer};${doc.salidasSensorDer};${doc.entradasSensorIzq};${doc.salidasSensorIzq};${doc.entradasSensorDer2};${doc.salidasSensorDer2}\r\n`
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.nseq};${doc.sensor};${doc.eventoIO ? 1 : 0};${doc.entradasSensorDer};${doc.salidasSensorDer};${doc.entradasSensorIzq};${doc.salidasSensorIzq};${doc.entradasSensorDer2};${doc.salidasSensorDer2};${doc.entradasTotal-doc.salidasTotal}\r\n`
                 fs.writeFile(pcount_trg_t, content, { flag: 'a' }, err => {});
             
             } 
@@ -102,7 +103,7 @@ const door = () => {
 
     
     
-    console.log("Person count data saved");
+    console.log("Person count data saved: ", pcount_trg_t);
 
         
     
@@ -137,7 +138,7 @@ const wifi = () => {
 
     
     
-    console.log("Wifi data saved");
+    console.log("Wifi data saved: ", wifi_trg_t);
         
    
 }
@@ -174,7 +175,7 @@ const ble = () => {
     //fs.writeFile(ble_trg_t,"END-OF-LINE",{flag:'a'}, err => {})
     
      
-    console.log("BLE data saved");
+    console.log("BLE data saved: ",ble_trg_t);
 
 }
 
@@ -183,13 +184,13 @@ const main = () => {
     wifi();
     ble();
 
-    
+    /*
     exec(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error PC-> "+ error)
         }
         console.log(stdout.toString())
-    })
+    })*/
     
     /*
     exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{

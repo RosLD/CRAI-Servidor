@@ -14,3 +14,10 @@ certs
 ignore.js
 /.idea
 python/doc/dataframe_online/*
+ignore.csv
+ignore2.ipynb
+ignore3.ipynb
+ignore4.ipynb
+kalipass
+/python/olds
+/sqlite_databases
