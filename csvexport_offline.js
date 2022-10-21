@@ -192,14 +192,14 @@ const main = () => {
         console.log(stdout.toString())
     })
     
-    /*
+    
     exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error BLE-> "+ error)
         }
         console.log(stdout.toString())
         console.log(stderr.toString())
-    })*/
+    })
     /*
     exec(`python3.8 ./python/hd_offlinewifi.py ${wifi_trg_t} ${pcount_trg_t}`,(error,stdout,stderr)=>{
         if(error !== null){
@@ -215,7 +215,6 @@ const main = () => {
 
 
 
-
 var job = new CronJob(
     '00 22 * * *',
     //'00 00 22 * * *',
@@ -224,5 +223,4 @@ var job = new CronJob(
 
 console.log("Starting CRON job");
 job.start()
-
 
