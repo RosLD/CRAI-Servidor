@@ -3,8 +3,9 @@ import time
 import sys
 import os
 
-nombre_target = "csv/off/raw/ble_2022-10-21.csv" #sys.argv[1]
+nombre_target = sys.argv[1]#"csv/off/raw/ble_2022-10-24.csv" #
 
+fecha_diahoy = nombre_target.split("_")[1]
 fsize = os.path.getsize(nombre_target)
 
 while fsize == 74:
@@ -30,11 +31,10 @@ print(f'Hora inicio: {hora_inicio}')
 # Variables funcionamiento
 
 # Para localizar los CSVs
-# nombre_target = #"/home/servidoridiit1upct/CRAI-Servidor/csv/ble_"+time.strftime('%Y-%m-%d', time.localtime())+"_7-22.csv" #Nombre del archivo
-nombre_filter = "./csv/off/csv_offline_filter/ble_filter_" + time.strftime('%Y-%m-%d',
-                                                                           time.localtime()) + "_samp" + str(
+# nombre_target = #"/home/servidoridiit1upct/CRAI-Servidor/csv/ble_"+fecha_diahoy+"_7-22.csv" #Nombre del archivo
+nombre_filter = "./csv/off/csv_offline_filter/ble_filter_" + nombre_target.split("_")[1] + "_samp" + str(
     sampling) + ".csv"
-nombre_resumen = "./csv/off/csv_offline_filter/ble_resumen_" + time.strftime('%Y-%m-%d',time.localtime())+".csv"
+nombre_resumen = "./csv/off/csv_offline_filter/ble_resumen_" + nombre_target.split("_")[1] +".csv"
 
 filter_cols = ['Indice int. muestreo', 'Timestamp int.', 'Raspberry', 'Timestamp inicial', 'Nº Mensajes', 'MAC',
                'Tipo MAC', 'Tipo ADV', 'BLE Size', 'RSP Size', 'BLE Data', 'RSSI promedio']
@@ -57,7 +57,7 @@ datos_ble.replace(
     {"Raspberry1": "Raspberry A", "Raspberry2": "Raspberry D", "Raspberry3": "Raspberry B", "Raspberry5": "Raspberry E",
      "Raspberry7": "Raspberry C"}, inplace=True)
 
-columnas_resumen = ['Hora','Intervalo','Raspberry','Estado']
+columnas_resumen = ['Fecha','Hora','Indice intervalo','RA(1/0)','RB(1/0)','RC(1/0)','RD(1/0)','RE(1/0)']
 datos_resumen = pd.DataFrame(columns=columnas_resumen)
 
 go = True
@@ -103,7 +103,7 @@ while go:
                 datos_filtrados.at[indice, 'RSSI promedio'] += row['RSSI']
 
             else:
-                data = [nseq, time.strftime('%Y-%m-%d', time.localtime()) + " " + desde_tiempo, row['Id'],
+                data = [nseq, fecha_diahoy + " " + desde_tiempo, row['Id'],
                         row['Fecha'] + " " + row['Hora'], 1, row['MAC'], row['Tipo MAC'], row['Tipo ADV'],
                         row['ADV Size'], row['RSP Size'], row['Advertisement'], row['RSSI']]
                 datos_filtrados = pd.concat([datos_filtrados, pd.DataFrame([data], columns=filter_cols)], ignore_index=True)
@@ -112,7 +112,7 @@ while go:
     datos_filtrados['RSSI promedio'] = datos_filtrados['RSSI promedio'] / datos_filtrados['Nº Mensajes']
     #Comprobamos si han llegado keep alive de todas las raspberrys
     rsp = datos_filtrados[datos_filtrados['MAC']=="00:00:00:00:00:00"]
-    fecha_resumen = time.strftime('%Y-%m-%d', time.localtime())+ " " + desde_tiempo
+    fecha_resumen = fecha_diahoy+ " " + desde_tiempo
 
     if len(rsp) != 5:
         #COmpruebo cual falta
@@ -133,12 +133,29 @@ while go:
         if len(rsp[rsp['Raspberry']=="Raspberry E"]) == 0:
             falta.append('Raspberry E')    
         
+        lista_resumen = [fecha_diahoy,desde_tiempo,nseq,0,0,0,0,0]
+        #Metemos los que falta en el dataframe normal
         for j in falta:
-            datos_resumen = pd.concat([datos_resumen, pd.DataFrame([[fecha_resumen, nseq, j, 0]], columns=columnas_resumen)], ignore_index=True)
-
+            data = [nseq, fecha_diahoy + " " + desde_tiempo, j,
+                        fecha_diahoy + " " + hasta_tiempo, 0, "00:00:00:00:00:00", "Public", "ADV_IND",
+                        4, 0, "abcd", -70]
+            datos_filtrados = pd.concat([datos_filtrados, pd.DataFrame([data], columns=filter_cols)], ignore_index=True)
+            #datos_resumen = pd.concat([datos_resumen, pd.DataFrame([[fecha_resumen, nseq, j, 0]], columns=columnas_resumen)], ignore_index=True)
+    
+    #Creamos el resumen
     for k in rsp['Raspberry']:
-        valores = [fecha_resumen, nseq, k, 1]
-        datos_resumen = pd.concat([datos_resumen, pd.DataFrame([valores], columns=columnas_resumen)], ignore_index=True)
+        if k == "Raspberry A":
+            lista_resumen[3] = 1
+        elif k == "Raspberry B":
+            lista_resumen[4] = 1
+        elif k == "Raspberry C":
+            lista_resumen[5] = 1
+        elif k == "Raspberry D":
+            lista_resumen[6] = 1
+        elif k == "Raspberry E":
+            lista_resumen[7] = 1 
+
+    datos_resumen = pd.concat([datos_resumen, pd.DataFrame([lista_resumen], columns=columnas_resumen)], ignore_index=True)
     
     if nseq == 1:
         

@@ -20,7 +20,6 @@ const puertadatos = database.getCollection('DoorSensors')
 const bledatos = database.getCollection('BLE2')
 const wifidatos = database.getCollection('wifi')
 
-//let cabecera = 'Fecha;Hora;Evento In-Out(1/0);Cont. D-In total;Cont. I-In total;Total IN;Cont. D-out total;Cont. I-Out total;Total OUT;Estimación nº Personas\r\n'
 let cabeceradoor = 'Fecha;Hora;NSeq;Sensor;Evento In-Out(1/0);Entradas Derecha;Salidas Derecha;Entradas Izquierda;Salidas Izquierda;Entradas Derecha 2;Salidas Derecha 2;Ocupacion estimada\r\n'
 let cabecerawifi = 'Fecha;Hora;Id;Canal;SSID;MAC Origen;RSSI;Rate;HTC Cap;Vendor Specific;Extended Rates;Extended HTC;VHT Cap\r\n'
 
@@ -46,13 +45,35 @@ const getFecha = () => {
               pad(d.getMonth()+1),
               pad(d.getDate())].join('-');
 
-  //return dformat;
-  return process.argv[2]
+  return dformat;
 } 
 
+const getHora = () => {
 
-var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
-//var query = {"timestamp": {"$gte": `2022-10-21 07:00:00`, "$lt": `2022-10-21 22:00:00`}};
+    let d = new Date,
+    dformat = [pad(d.getHours()),
+              pad(d.getMinutes())].join(":");
+    
+    return dformat; 
+}
+
+const getInt = () => {
+
+    let d = new Date;
+    let dformat;
+
+    
+    if ((d.getMinutes() - interval) < 0)
+        dformat = [pad(d.getHours()-1),pad(d.getMinutes()-interval+60)].join(":")
+    else
+        dformat = [pad(d.getHours()),pad(d.getMinutes()-interval)].join(":")
+    
+    return dformat
+} 
+
+let dia = "2022-10-21"
+//var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+var query = {"timestamp": {"$gte": `${dia} 07:00:00`, "$lt": `${dia} 22:00:00`}};
 
 let content = {}
 
@@ -167,17 +188,17 @@ const main = () => {
             console.log(stdout.toString())
         })
         
-        
+        /*
         exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{
             if(error !== null){
                 console.log("Python error BLE-> "+ error)
             }
             console.log(stdout.toString())
             console.log(stderr.toString())
-        })
+        })*/
 
 
-    },1000*60*60*2) //Dos horas de margen
+    },1000*60)
     
     /*
     exec(`python3.8 ./python/hd_offlinewifi.py ${wifi_trg_t} ${pcount_trg_t}`,(error,stdout,stderr)=>{
@@ -192,8 +213,7 @@ const main = () => {
 
 }
 
-main();
-
+main()
 
 /*
 var job = new CronJob(
@@ -203,5 +223,5 @@ var job = new CronJob(
 );
 
 console.log("Starting CRON job");
-job.start()*/
-
+job.start()
+*/
