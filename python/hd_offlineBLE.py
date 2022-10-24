@@ -5,7 +5,7 @@ import os
 
 nombre_target = sys.argv[1]#"csv/off/raw/ble_2022-10-24.csv" #
 
-fecha_diahoy = nombre_target.split("_")[1]
+fecha_diahoy = nombre_target.split("_")[1].split(".")[0]
 fsize = os.path.getsize(nombre_target)
 
 while fsize == 74:
@@ -58,7 +58,7 @@ datos_ble.replace(
      "Raspberry7": "Raspberry C"}, inplace=True)
 
 columnas_resumen = ['Fecha','Hora','Indice intervalo','RA(1/0)','RB(1/0)','RC(1/0)','RD(1/0)','RE(1/0)']
-datos_resumen = pd.DataFrame(columns=columnas_resumen)
+
 
 go = True
 
@@ -88,6 +88,7 @@ while go:
     aux = aux.loc[aux["Hora"] < hasta_tiempo]
     lista_filtro = pd.read_csv(nombre_lista, delimiter=';')
     datos_filtrados = pd.DataFrame(columns=filter_cols)
+    datos_resumen = pd.DataFrame(columns=columnas_resumen)
 
     # Start filtering
     for index, row in aux.iterrows():
@@ -113,7 +114,7 @@ while go:
     #Comprobamos si han llegado keep alive de todas las raspberrys
     rsp = datos_filtrados[datos_filtrados['MAC']=="00:00:00:00:00:00"]
     fecha_resumen = fecha_diahoy+ " " + desde_tiempo
-
+    lista_resumen = [fecha_diahoy,desde_tiempo,nseq,0,0,0,0,0]
     if len(rsp) != 5:
         #COmpruebo cual falta
         falta = []
@@ -133,7 +134,7 @@ while go:
         if len(rsp[rsp['Raspberry']=="Raspberry E"]) == 0:
             falta.append('Raspberry E')    
         
-        lista_resumen = [fecha_diahoy,desde_tiempo,nseq,0,0,0,0,0]
+    
         #Metemos los que falta en el dataframe normal
         for j in falta:
             data = [nseq, fecha_diahoy + " " + desde_tiempo, j,

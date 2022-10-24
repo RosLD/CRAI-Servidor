@@ -104,7 +104,7 @@ for ts in time_list:
             ge = contador_raw_ka.loc[ts]    #Si no salta el try existe dato (se ha perdido poco)
             s = 0
         except: #Si salta es que no
-            a = "NaN"
+            a = "NaN"   #TO-DO si no hay keeps alives hace esto directamente
             s = "NaN"
     else:
         s = 1
