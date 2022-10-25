@@ -78,12 +78,14 @@ contador_raw_ka.drop(columns=['Fecha','Hora','Entradas Derecha','Salidas Derecha
 
 pc = []
 estado = []
+Fecha_list = []
+Hora_list = []
 
 for ts in time_list:
     
     t = f"{str(ts.hour).zfill(2)}:{str(ts.minute).zfill(2)}:{str(ts.second).zfill(2)}"
-
-    
+    Fecha_list.append(f"{ts.year}-{ts.month}-{ts.day}")
+    Hora_list.append(t)
     try:    #Puede saltar pero que haya keep alive
         a = contador_raw_ka.loc[ts]['Ocupacion estimada']
         if math.isnan(a):
@@ -114,8 +116,9 @@ for ts in time_list:
     estado.append(s)
     
 
+
 contador = pd.DataFrame(
-    {'Timestamp': pd.to_datetime(time_list), 'personCount': pc, 'Interval': np.arange(0, len(time_list), step=1),"Sensor":estado})
+    {'Fecha': Fecha_list, 'Hora': Hora_list, 'Interval': np.arange(0, len(time_list),  step=1),'Ocupacion': pc,"Estado":estado})
  
 direccion = "csv/off/csv_offline_filter/pcount_filter_"+direccion.split("_")[1]
 contador.to_csv(direccion,sep=";",index=False)
