@@ -6,6 +6,7 @@ import os
 nombre_target = sys.argv[1]#"csv/off/raw/ble_2022-10-24.csv" #
 
 fecha_diahoy = nombre_target.split("_")[1].split(".")[0]
+print(fecha_diahoy)
 fsize = os.path.getsize(nombre_target)
 
 while fsize == 74:
@@ -32,9 +33,9 @@ print(f'Hora inicio: {hora_inicio}')
 
 # Para localizar los CSVs
 # nombre_target = #"/home/servidoridiit1upct/CRAI-Servidor/csv/ble_"+fecha_diahoy+"_7-22.csv" #Nombre del archivo
-nombre_filter = "./csv/off/csv_offline_filter/ble_filter_" + nombre_target.split("_")[1] + "_samp" + str(
+nombre_filter = "./csv/off/csv_offline_filter/ble_filter_" + fecha_diahoy + "_samp" + str(
     sampling) + ".csv"
-nombre_resumen = "./csv/off/csv_offline_filter/ble_resumen_" + nombre_target.split("_")[1] +".csv"
+nombre_resumen = "./csv/off/csv_offline_filter/ble_resumen_" + fecha_diahoy +".csv"
 
 filter_cols = ['Indice int. muestreo', 'Timestamp int.', 'Raspberry', 'Timestamp inicial', 'Nº Mensajes', 'MAC',
                'Tipo MAC', 'Tipo ADV', 'BLE Size', 'RSP Size', 'BLE Data', 'RSSI promedio']

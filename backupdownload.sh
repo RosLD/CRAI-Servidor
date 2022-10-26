@@ -32,10 +32,10 @@ sshpass -f kalipass scp kali@10.147.18.29:~/Sniffer_Wifi/${fecha}_Sniffer-Wific1
 sshpass -f kalipass scp kali@10.147.18.29:~/Sniffer_Wifi/${fecha}_Sniffer-Wific6_Raspberry2.db sqlite_databases/${fecha}/Raspberry2/.
 sshpass -f kalipass scp kali@10.147.18.29:~/Sniffer_Wifi/${fecha}_Sniffer-Wific11_Raspberry2.db sqlite_databases/${fecha}/Raspberry2/.
 echo "Getting DB from Raspberry 3"
-sshpass -f kalipass scp kali@10.147.18.30:~/Sniffer_Wifi/${fecha}_DatosBLE_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
-sshpass -f kalipass scp kali@10.147.18.30:~/Sniffer_Wifi/${fecha}_Sniffer-Wific1_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
-sshpass -f kalipass scp kali@10.147.18.30:~/Sniffer_Wifi/${fecha}_Sniffer-Wific6_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
-sshpass -f kalipass scp kali@10.147.18.30:~/Sniffer_Wifi/${fecha}_Sniffer-Wific11_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
+sshpass -f kalipass scp kali@10.147.18.127:~/Sniffer_Wifi/${fecha}_DatosBLE_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
+sshpass -f kalipass scp kali@10.147.18.127:~/Sniffer_Wifi/${fecha}_Sniffer-Wific1_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
+sshpass -f kalipass scp kali@10.147.18.127:~/Sniffer_Wifi/${fecha}_Sniffer-Wific6_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
+sshpass -f kalipass scp kali@10.147.18.127:~/Sniffer_Wifi/${fecha}_Sniffer-Wific11_Raspberry3.db sqlite_databases/${fecha}/Raspberry3/.
 echo "Getting DB from Raspberry 5"
 sshpass -f kalipass scp kali@10.147.18.112:~/Sniffer_Wifi/${fecha}_DatosBLE_Raspberry5.db sqlite_databases/${fecha}/Raspberry5/.
 sshpass -f kalipass scp kali@10.147.18.112:~/Sniffer_Wifi/${fecha}_Sniffer-Wific1_Raspberry5.db sqlite_databases/${fecha}/Raspberry5/.
