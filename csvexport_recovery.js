@@ -32,20 +32,20 @@ function pad(n, z){
     z = z || 2;
   return ('00' + n).slice(-z);
 }
+
+let fechaobtener = ""
   
 const getFecha = () => {
-  let d = new Date,
-  dformat =   [d.getFullYear(),
-              pad(d.getMonth()+1),
-              pad(d.getDate())].join('-');
+  
 
   //return dformat;
-  return process.argv[2]
+  //console.log("A fecha e: ",fechaobtener)
+  return fechaobtener
 } 
 
-var query = {"Timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+var query = {};
 
-var query_wifi = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+var query_wifi = {};
 
 let content = {}
 
@@ -149,7 +149,7 @@ const ble = async (bledatos) => {
 
 const inicio = async () => {
 
-    await database.main()
+    await database.main()//Hace que el script de mongo se conecte
     
     const puertadatos = database.getCollection('DoorSensorsRecovery')
     const bledatos = database.getCollection('BLERecovery')
@@ -161,7 +161,14 @@ const inicio = async () => {
     
 }
 
-const main = async () => {
+const descargaryprocesar = async (fecha) => {
+
+    fechaobtener = fecha
+
+    query = {"Timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+
+    query_wifi = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+
 
     await inicio();
     /*door();
@@ -187,7 +194,7 @@ const main = async () => {
         console.log(stderr.toString())
     })
     
-
+    console.log("Ya acabé")
 
     
     
@@ -197,7 +204,7 @@ const main = async () => {
 
 }
 
-main();
+module.exports = {descargaryprocesar}
 
 
 /*

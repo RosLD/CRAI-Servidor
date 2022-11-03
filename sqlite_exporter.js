@@ -2,6 +2,8 @@ const Database = require('better-sqlite3')
 const database = require('./models/async_mongo')
 const fs = require('fs');
 
+const {descargaryprocesar} = require("./csvexport_recovery")
+
 let fecha = process.argv[2]
 let first = `${fecha} 07:00:00`
 let last = `${fecha} 22:00:00`
@@ -188,9 +190,20 @@ async function inicio(){
         }
     
     }
+
+    
 }   
 
-inicio()
+async function main(){
+
+    await inicio()
+
+    console.log("Ahora a recuperar")
+
+    await descargaryprocesar(fecha)
+}
+
+main()
 
 
 
