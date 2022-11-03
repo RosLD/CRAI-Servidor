@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { exec } = require("child_process");
+const { execSync } = require("child_process");
 
 var database = require("./models/async_mongo");
 
@@ -43,8 +43,9 @@ const getFecha = () => {
   return process.argv[2]
 } 
 
+var query = {"Timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
 
-var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+var query_wifi = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
 
 let content = {}
 
@@ -56,14 +57,14 @@ const door = async (puertadatos) => {
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
 
-    var cursor = await puertadatos.find(query).sort({"timestamp":1});
+    var cursor = await puertadatos.find(query).sort({"Timestamp":1});
     
     //console.log(cursor)
     await cursor.forEach(
         function(doc) {
             
-            if(doc.timestamp !== undefined){
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.nseq};${doc.sensor};${doc.eventoIO ? 1 : 0};${doc.entradasSensorDer};${doc.salidasSensorDer};${doc.entradasSensorIzq};${doc.salidasSensorIzq};${doc.entradasSensorDer2};${doc.salidasSensorDer2};${doc.entradasTotal-doc.salidasTotal}\r\n`
+            if(doc.Timestamp !== undefined){
+                content = `${doc.Timestamp.split(" ")[0]};${doc.Timestamp.split(" ")[1]};${doc.NSeq};${doc.IdSensor};${doc.EventoIO ? 1 : 0};${doc.entradasDer};${doc.salidasDer};${doc.entradasIzq};${doc.salidasIzq};${doc.entradasDer2};${doc.salidasDer2};${doc.ocupacion}\r\n`
                 fs.writeFile(pcount_trg_t, content, { flag: 'a' }, err => {});
             
             } 
@@ -85,7 +86,7 @@ const wifi = async (wifidatos) => {
 
     fs.writeFile(wifi_trg_t, cabecerawifi, { flag: 'w' }, err => {});
     
-    var cursor = await wifidatos.find(query);
+    var cursor = await wifidatos.find(query_wifi);
     
     cursor.sort({timestamp:1}).allowDiskUse();
 
@@ -120,15 +121,16 @@ const ble = async (bledatos) => {
 
     var cursor = await bledatos.find(query);
     
-    cursor.sort({timestamp:1}).allowDiskUse();
+    cursor.sort({Timestamp:1}).allowDiskUse();
     
     console.log(`Saving BLE data of the day`)
 
     await cursor.forEach(
         function(doc) {
-            if(doc.timestamp !== undefined){
+            
+            if(doc.Timestamp !== undefined){
                 
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.idRasp};${doc.Nseq};${doc.MAC};${doc.TipoMAC};${doc.BLE_Size};${doc.RSP_Size};${doc.TipoADV};${doc.BLE_Data};${doc.RSSI}\r\n`
+                content = `${doc.Timestamp.split(" ")[0]};${doc.Timestamp.split(" ")[1]};${doc.idRasp};${doc.Nseq};${doc.MAC};${doc.TipoMAC};${doc.BLE_Size};${doc.RSP_Size};${doc.TipoADV};${doc.BLE_Data};${doc.RSSI}\r\n`
                     fs.writeFile(ble_trg_t, content, { flag: 'a' }, err => {
                     
                 });
@@ -165,28 +167,29 @@ const main = async () => {
     /*door();
     wifi();
     ble();*/
+    //ble_trg_t = ble_trg +getFecha()+".csv"
+
+    
+    console.log("Processing P Count csv")
+    await execSync(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t} 2`,(error,stdout,stderr)=>{
+        if(error !== null){
+            console.log("Python error PC-> "+ error)
+        }
+        console.log(stdout.toString())
+    })
+    
+    console.log("Processing BLE")
+    await execSync(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t} 2`,(error,stdout,stderr)=>{
+        if(error !== null){
+            console.log("Python error BLE-> "+ error)
+        }
+        console.log(stdout.toString())
+        console.log(stderr.toString())
+    })
     
 
-    setTimeout(()=> {
 
-        exec(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
-            if(error !== null){
-                console.log("Python error PC-> "+ error)
-            }
-            console.log(stdout.toString())
-        })
-        
-        
-        exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{
-            if(error !== null){
-                console.log("Python error BLE-> "+ error)
-            }
-            console.log(stdout.toString())
-            console.log(stderr.toString())
-        })
-
-
-    },1000*60*60*2) //Dos horas de margen
+    
     
    
 

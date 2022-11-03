@@ -123,5 +123,9 @@ for ts in time_list:
 contador = pd.DataFrame(
     {'Fecha': Fecha_list, 'Hora': Hora_list, 'Interval': np.arange(0, len(time_list),  step=1),'Ocupacion': pc,"Estado":estado})
  
-direccion = "csv/off/csv_offline_filter/pcount_filter_"+direccion.split("_")[1]
+direccion_dst = "csv/off/csv_offline_filter"
+
+if sys.argv[2] == "2":
+    direccion_dst = "csv/recover/csv_filter"
+direccion = direccion_dst+"/pcount_filter_"+direccion.split("_")[1]
 contador.to_csv(direccion,sep=";",index=False)
