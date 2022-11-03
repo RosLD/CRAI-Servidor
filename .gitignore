@@ -21,3 +21,4 @@ ignore4.ipynb
 kalipass
 /python/olds
 /sqlite_databases
+/csv

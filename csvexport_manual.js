@@ -71,7 +71,7 @@ const getInt = () => {
     return dformat
 } 
 
-let dia = "2022-10-21"
+let dia = "2022-10-26"
 //var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
 var query = {"timestamp": {"$gte": `${dia} 07:00:00`, "$lt": `${dia} 22:00:00`}};
 
@@ -80,7 +80,7 @@ let content = {}
 
 const door = () => {
 
-    pcount_trg_t = pcount_trg+getFecha()+".csv";
+    pcount_trg_t = pcount_trg+dia+".csv";
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
 
@@ -142,7 +142,7 @@ const wifi = () => {
 
 const ble = () => {
 
-    ble_trg_t = ble_trg+getFecha()+".csv";
+    ble_trg_t = ble_trg+dia+".csv";
     
     fs.writeFile(ble_trg_t, cabecerable, { flag: 'w' }, err => {});
 
@@ -176,29 +176,10 @@ const ble = () => {
 
 const main = () => {
     door();
-    wifi();
-    ble();
+    //wifi();
+    //ble();
 
-    setTimeout(()=> {
-
-        exec(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
-            if(error !== null){
-                console.log("Python error PC-> "+ error)
-            }
-            console.log(stdout.toString())
-        })
-        
-        /*
-        exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{
-            if(error !== null){
-                console.log("Python error BLE-> "+ error)
-            }
-            console.log(stdout.toString())
-            console.log(stderr.toString())
-        })*/
-
-
-    },1000*60)
+    
     
     /*
     exec(`python3.8 ./python/hd_offlinewifi.py ${wifi_trg_t} ${pcount_trg_t}`,(error,stdout,stderr)=>{

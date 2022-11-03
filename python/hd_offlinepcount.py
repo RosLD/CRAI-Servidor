@@ -86,6 +86,9 @@ for ts in time_list:
     t = f"{str(ts.hour).zfill(2)}:{str(ts.minute).zfill(2)}:{str(ts.second).zfill(2)}"
     Fecha_list.append(f"{ts.year}-{ts.month}-{ts.day}")
     Hora_list.append(t)
+    
+
+
     try:    #Puede saltar pero que haya keep alive
         a = contador_raw_ka.loc[ts]['Ocupacion estimada']
         if math.isnan(a):

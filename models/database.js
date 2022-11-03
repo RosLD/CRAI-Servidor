@@ -3,7 +3,7 @@ const { MongoClient,Db } = require('mongodb');
 // import { MongoClient } from 'mongodb'
 
 // Connection URL
-const url = 'mongodb://212.128.44.50:27017';
+const url = 'mongodb://212.128.44.50:27017'
 
 var client;
 var db;
@@ -22,15 +22,6 @@ client.connect((err)=>{
 
 db = client.db(dbName)
 
-/*
-async function init() {
-  // Use connect method to connect to the server
-  client = new MongoClient(url);
-  await client.connect();
-  console.log('Connected successfully to Database');
-  db = client.db(dbName)
-  
-}*/
 
 const getDatabase = () => {
     return db;
