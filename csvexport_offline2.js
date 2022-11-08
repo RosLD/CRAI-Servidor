@@ -14,15 +14,16 @@ if (interval > 60){
 
 }
 
+
 let cabeceradoor = 'Fecha;Hora;NSeq;Sensor;Evento In-Out(1/0);Entradas Derecha;Salidas Derecha;Entradas Izquierda;Salidas Izquierda;Entradas Derecha 2;Salidas Derecha 2;Ocupacion estimada\r\n'
 let cabecerawifi = 'Fecha;Hora;Id;NSeq;Canal;SSID;MAC Origen;RSSI;Rate;HTC Cap;Vendor Specific;Extended Rates;Extended HTC;VHT Cap\r\n'
 
 let cabecerable = 'Fecha;Hora;Id;NSeq;MAC;Tipo MAC;ADV Size;RSP Size;Tipo ADV;Advertisement;RSSI\r\n'
 
 /* File targets for python scripts */
-wifi_trg = "csv/recover/raw/wifi_"
-ble_trg = "csv/recover/raw/ble_"
-pcount_trg = "csv/recover/raw/pcount_"
+wifi_trg = "csv/off/raw/wifi_"
+ble_trg = "csv/off/raw/ble_"
+pcount_trg = "csv/off/raw/pcount_"
 wifi_trg_t = ""
 ble_trg_t = ""
 pcount_trg_t = ""
@@ -45,7 +46,6 @@ const getFecha = () => {
 
 var query = {};
 
-var query_wifi = {};
 
 let content = {}
 
@@ -63,8 +63,8 @@ const door = async (puertadatos) => {
     await cursor.forEach(
         function(doc) {
             
-            if(doc.Timestamp !== undefined){
-                content = `${doc.Timestamp.split(" ")[0]};${doc.Timestamp.split(" ")[1]};${doc.NSeq};${doc.IdSensor};${doc.EventoIO ? 1 : 0};${doc.entradasDer};${doc.salidasDer};${doc.entradasIzq};${doc.salidasIzq};${doc.entradasDer2};${doc.salidasDer2};${doc.ocupacion}\r\n`
+            if(doc.timestamp !== undefined){
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.nseq};${doc.sensor};${doc.eventoIO ? 1 : 0};${doc.entradasSensorDer};${doc.salidasSensorDer};${doc.entradasSensorIzq};${doc.salidasSensorIzq};${doc.entradasSensorDer2};${doc.salidasSensorDer2};${doc.entradasTotal-doc.salidasTotal}\r\n`
                 fs.writeFile(pcount_trg_t, content, { flag: 'a' }, err => {});
             
             } 
@@ -86,7 +86,7 @@ const wifi = async (wifidatos) => {
 
     fs.writeFile(wifi_trg_t, cabecerawifi, { flag: 'w' }, err => {});
     
-    var cursor = await wifidatos.find(query_wifi);
+    var cursor = await wifidatos.find(query);
     
     cursor.sort({timestamp:1}).allowDiskUse();
 
@@ -96,7 +96,7 @@ const wifi = async (wifidatos) => {
     await cursor.forEach(
         function(doc) {
             if(doc.timestamp !== undefined){
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.id};${doc.NSeq};${doc.canal};"${doc.SSID}";${doc.MAC_origen};${doc.RSSI};${doc.Rates};${doc.HTC_Capabilities};${doc.Vendor_Specific};${doc.Extended_rates};${doc.Extended_HTC_Capabilities};${doc.VHT_Capabilities}\r\n`
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.id};${doc.nseq};${doc.canal};"${doc.ssid}";${doc.OrigMAC};${doc.rssi};${doc.rate};${doc.htccap};${doc.vendorspecific};${doc.extendedrates};${doc.extendedhtc};${doc.vhtcap}\r\n`
                 fs.writeFile(wifi_trg_t, content, { flag: 'a' }, err => {});
             
             }
@@ -121,16 +121,16 @@ const ble = async (bledatos) => {
 
     var cursor = await bledatos.find(query);
     
-    cursor.sort({Timestamp:1}).allowDiskUse();
+    cursor.sort({timestamp:1}).allowDiskUse();
     
     console.log(`Saving BLE data of the day`)
 
     await cursor.forEach(
         function(doc) {
             
-            if(doc.Timestamp !== undefined){
+            if(doc.timestamp !== undefined){
                 
-                content = `${doc.Timestamp.split(" ")[0]};${doc.Timestamp.split(" ")[1]};${doc.idRasp};${doc.Nseq};${doc.MAC};${doc.TipoMAC};${doc.BLE_Size};${doc.RSP_Size};${doc.TipoADV};${doc.BLE_Data};${doc.RSSI}\r\n`
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.idRasp};${doc.nseq};${doc.mac};${doc.tipoMac};${doc.bleSize};${doc.rspSize};${doc.tipoADV};${doc.bleData};${doc.rssi}\r\n`
                     fs.writeFile(ble_trg_t, content, { flag: 'a' }, err => {
                     
                 });
@@ -151,9 +151,9 @@ const inicio = async () => {
 
     await database.main()//Hace que el script de mongo se conecte
     
-    const puertadatos = database.getCollection('DoorSensorsRecovery')
-    const bledatos = database.getCollection('BLERecovery')
-    const wifidatos = database.getCollection('WifiRecovery')
+    const puertadatos = database.getCollection('DoorSensors')
+    const bledatos = database.getCollection('BLE2')
+    const wifidatos = database.getCollection('wifi')
 
     await door(puertadatos)
     await ble(bledatos)
@@ -161,13 +161,11 @@ const inicio = async () => {
     
 }
 
-const descargaryprocesar = async (fecha) => {
+const descargaryprocesaroffline = async (fecha) => {
 
     fechaobtener = fecha
 
-    query = {"Timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
-
-    query_wifi = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+    query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
 
 
     await inicio();
@@ -178,7 +176,7 @@ const descargaryprocesar = async (fecha) => {
 
     
     console.log("Processing P Count csv")
-    await execSync(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t} 2`,(error,stdout,stderr)=>{
+    await execSync(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t} 1`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error PC-> "+ error)
         }
@@ -186,7 +184,7 @@ const descargaryprocesar = async (fecha) => {
     })
     
     console.log("Processing BLE")
-    await execSync(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t} 2`,(error,stdout,stderr)=>{
+    await execSync(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t} 1`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error BLE-> "+ error)
         }
@@ -197,11 +195,13 @@ const descargaryprocesar = async (fecha) => {
     console.log("Ya acabé")
 
     process.exit()
+
+    
     
 
 }
 
-module.exports = {descargaryprocesar}
+descargaryprocesaroffline(process.argv[2])
 
 
 /*

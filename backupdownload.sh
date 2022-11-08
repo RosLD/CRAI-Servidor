@@ -52,4 +52,6 @@ sshpass -f kalipass scp kali@10.147.18.240:~/UPCT_TerabeePC/${fecha}_PersonCount
 
 echo "Backups complete now start with server csvs"
 
-node csvexport_offline.js $fecha
+node csvexport_offline2.js $fecha
+
+node sqlite_exporter.js $fecha
