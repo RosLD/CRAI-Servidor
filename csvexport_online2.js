@@ -21,9 +21,9 @@ let cabecerawifi = 'Fecha;Hora;Id;NSeq;Canal;SSID;MAC Origen;RSSI;Rate;HTC Cap;V
 let cabecerable = 'Fecha;Hora;Id;NSeq;MAC;Tipo MAC;ADV Size;RSP Size;Tipo ADV;Advertisement;RSSI\r\n'
 
 /* File targets for python scripts */
-wifi_trg = "csv/off/raw/wifi_"
-ble_trg = "csv/off/raw/ble_"
-pcount_trg = "csv/off/raw/pcount_"
+wifi_trg = "csv/int/raw/wifi_"
+ble_trg = "csv/int/raw/ble_"
+pcount_trg = "csv/int/raw/pcount_"
 wifi_trg_t = ""
 ble_trg_t = ""
 pcount_trg_t = ""
@@ -34,17 +34,40 @@ function pad(n, z){
   return ('00' + n).slice(-z);
 }
 
-let fechaobtener = ""
   
 const getFecha = () => {
   
+    let d = new Date,
+    dformat =   [d.getFullYear(),
+              pad(d.getMonth()+1),
+              pad(d.getDate())].join('-');
 
-  //return dformat;
-  //console.log("A fecha e: ",fechaobtener)
-  return fechaobtener
+    return dformat;
 } 
 
-var query = {};
+const getHora = () => {
+
+    let d = new Date,
+    dformat = [pad(d.getHours()),
+              pad(d.getMinutes())].join(":");
+    
+    return dformat; 
+}
+
+const getInt = () => {
+
+    let d = new Date;
+    let dformat;
+
+    
+    if ((d.getMinutes() - interval) < 0)
+        dformat = [pad(d.getHours()-1),pad(d.getMinutes()-interval+60)].join(":")
+    else
+        dformat = [pad(d.getHours()),pad(d.getMinutes()-interval)].join(":")
+    
+    return dformat
+} 
+
 
 
 let content = {}
@@ -53,9 +76,10 @@ let content = {}
 //Funcion para obtener los datos del sensor de puerta desde Mongo
 const door = async (puertadatos) => {
 
-    pcount_trg_t = pcount_trg+getFecha()+".csv";
+    pcount_trg_t = pcount_trg+getInt()+"-"+getHora()+".csv";
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
+    var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} ${getHora()}:00`}};//, "$lt": `${getFecha()} 22:00:00`
 
     var cursor = await puertadatos.find(query).sort({"Timestamp":1});
     
@@ -83,10 +107,12 @@ const door = async (puertadatos) => {
 //Funcion para obtener los datos de Wifi desde Mongo
 const wifi = async (wifidatos) => {
 
-    wifi_trg_t = wifi_trg+getFecha()+".csv";
+    wifi_trg_t = wifi_trg+getInt()+"-"+getHora()+".csv";
 
     fs.writeFile(wifi_trg_t, cabecerawifi, { flag: 'w' }, err => {});
     
+    var query = {"timestamp": {"$gte": `${getFecha()} ${getInt()}:00`, "$lt": `${getFecha()} ${getHora()}:00`}};
+
     var cursor = await wifidatos.find(query);
     
     cursor.sort({timestamp:1}).allowDiskUse();
@@ -115,11 +141,11 @@ const wifi = async (wifidatos) => {
 //Funcion para obtener los datos de BLE desde Mongo
 const ble = async (bledatos) => {
 
-    ble_trg_t = ble_trg+getFecha()+".csv";
+    ble_trg_t = ble_trg+getInt()+"-"+getHora()+".csv";
     
     fs.writeFile(ble_trg_t, cabecerable, { flag: 'w' }, err => {});
 
-
+    var query = {"timestamp": {"$gte": `${getFecha()} ${getInt()}:00`, "$lt": `${getFecha()} ${getHora()}:00`}};
     var cursor = await bledatos.find(query);
     
     cursor.sort({timestamp:1}).allowDiskUse();
@@ -164,18 +190,13 @@ const inicio = async () => {
 }
 
 //Esta es la funcion principal
-const descargaryprocesaroffline = async (fecha) => {
-
-    fechaobtener = fecha
-
-    query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
-
+const descargaryprocesaronline = async () => {
 
     await inicio();
 
     //A continuacion, se llaman a los scripts de Python
     console.log("Processing P Count csv")
-    await execSync(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t} 1`,(error,stdout,stderr)=>{
+    await execSync(`python3.8 ./python/hd_PCprocess.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error PC-> "+ error)
         }
@@ -183,7 +204,7 @@ const descargaryprocesaroffline = async (fecha) => {
     })
     
     console.log("Processing BLE")
-    await execSync(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t} 1`,(error,stdout,stderr)=>{
+    await execSync(`python3.8 ./python/hd_detect.py ${ble_trg_t} 1`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error BLE-> "+ error)
         }
@@ -191,16 +212,20 @@ const descargaryprocesaroffline = async (fecha) => {
         console.log(stderr.toString())
     })
     
-    console.log("Ya acabé")
-
-    process.exit()
-
-    
     
 
 }
 
-descargaryprocesaroffline(process.argv[2])
+
+var job = new CronJob(
+    `0,5,10,15,20,25,30,35,40,45,50,55 7-22 * * *`,
+    descargaryprocesaronline
+);
+
+console.log("Starting CRON job");
+job.start()
+
+
 
 
 
