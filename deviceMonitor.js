@@ -1,11 +1,10 @@
 var request = require('request');
 const botcrai = require('./models/bot_tel')
-const database = require('./models/database')
 var CronJob = require('cron').CronJob;
 
 require("dotenv").config();
 
-const nsen = database.getCollection("SensorManagement")
+
 
 var options = {
   'method': 'GET',
@@ -25,6 +24,8 @@ const main = () => {
         
         let datos = JSON.parse(response.body).data
         let okCount = 0;
+
+        //Get every sensor status
         for(let i = 0;i<datos.length;i++){
             for(let j = 0;j<ids.length;j++){
                 if((datos[i].clientid).includes((ids[j].id))){
@@ -62,10 +63,13 @@ const main = () => {
         //Check out
         let chain = 'Estado Raspberry y Sensores: \n'
         let sub = ''
+
+        //Here we loop in case something is wrong -> if the raspberry wasnt returned in api call
         for(c in ids){
             let count = 0
             chain += `${ids[c].id}: `
 
+            //If something is wrong it will add the status in the msg chain
             if(ids[c].status == undefined){
                 sub += "Desconectado de MQTT"
             }else if(ids[c].id != "Raspberry6"){
@@ -82,8 +86,8 @@ const main = () => {
                 if(ids[c].iface3 == undefined)
                     count++;    
                 
-                if(count == 3)
-                    sub += `${count} wifi antennas down`
+                
+                sub += `${count} wifi antennas down`
                 
                 
             }
@@ -100,8 +104,7 @@ const main = () => {
             sub = ''
         }
 
-        //console.log(ids)
-
+        
         ids = [{"id":'Raspberry1'},{"id":'Raspberry2'},{"id":'Raspberry3'},{"id":'Raspberry5'},{"id":'Raspberry6'},{"id":'Raspberry7'}]
         
         console.log(chain)
@@ -115,56 +118,11 @@ const main = () => {
 
 }
 
-let maxco2 = 1000
 
-const main2 = () => {
+main()      //Invoke function once at start
+   
 
-    
-    let chain = "ESP32 Sensors OK: "
-    let sok = 0
-    let sc = "ESP32 Down: "
-    let cod = "CO2 Warning: "
-    let bw = "Battery Warning: "
-
-    nsen.find({}).toArray(function(err, result) {
-        if (err) throw err;
-        
-        result.forEach(element => {
-            
-            if(element.found == 1){
-                sok++
-            }else{
-                sc += element.Id+", "
-            }
-
-            if(element.CO2 > maxco2)
-                cod += element.Id+", "
-            
-            if(element.Battery < 20)
-                bw += element.Id+", "
-
-        });
-
-        chain += sok+"\n"+sc+"\n"
-
-        if(cod.length > 13)
-            chain += cod+"\n"
-        
-        if(bw.length > 17)
-            chain += bw+"\n"
-
-        botcrai.botSendMessage(chain)
-
-        
-      });
-
-}
-
-
-main()
-//main2()
-
-var job = new CronJob(
+var job = new CronJob(//Invoke every 10 minutes from 7 to 22
     `0,10,20,30,40,50 7-22 * * *`,
     //'00 00 22 * * *',
     main

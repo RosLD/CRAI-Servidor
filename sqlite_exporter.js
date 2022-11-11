@@ -11,19 +11,19 @@ let last = `${fecha} 22:00:00`
 
 async function inicio(){
 
-    await database.main()
+    await database.main()       //Llama a la funcion para conectar con BBDD
     
+    //Obtiene las colecciones
     const ble = database.getCollection('BLERecovery')
     const door = database.getCollection('DoorSensorsRecovery')
     const wifi = database.getCollection('WifiRecovery')
     
     //Person Count
 
-    //TO-DO if db not exists try download, if not possible indicate it
+    
     const dbpc = new Database(`sqlite_databases/${fecha}/Raspberry8/${fecha}_PersonCount.db`);
 
-    //const stmt = dbpc.prepare(`select * from PersonCounter Where Timestamp BETWEEN "${fecha} 07:00:00" and "${fecha} 22:00:00" ORDER BY Timestamp`).all();
-
+    //Se obtienen los resultados
     try{
         const stmt = dbpc.prepare(`select * from PersonCounter Where Timestamp BETWEEN ? and ? ORDER BY Timestamp`);
         const datos = stmt.all(first,last);
@@ -34,6 +34,7 @@ async function inicio(){
             datos[i].ocupacion = datos[i].entradasTotal - datos[i].salidasTotal
         }
 
+        //El paquete SQL lo devuelve en forma de array de JSONs así que los guardamos todos
         await door.insertMany(datos)
         console.log(`PCount: Recovered ${datos.length} messages`)
     }catch(Exc){
@@ -51,14 +52,11 @@ async function inicio(){
 
 
     //BLE
-
-
-
+    //mismo Proceso para obtener datos BLE, la diferencia es que recorremos la lista de Raspberrys
     for (i in listado){
 
         let dbble = new Database(`sqlite_databases/${fecha}/${listado[i]}/${fecha}_DatosBLE_${listado[i]}.db`);
 
-        //const stmt = dbpc.prepare(`select * from PersonCounter Where Timestamp BETWEEN "${fecha} 07:00:00" and "${fecha} 22:00:00" ORDER BY Timestamp`).all();
 
         try{
             const stmt = dbble.prepare(`select * from ble_data Where Timestamp BETWEEN ? and ? ORDER BY Timestamp`);
@@ -91,12 +89,16 @@ async function inicio(){
 
     }
 
+
+    //Mismo procedimiento para Wifi para los 3 canales
+
+    
     //Wifi canal 1
+    
     for (i in listado){
 
         let dbwifi = new Database(`sqlite_databases/${fecha}/${listado[i]}/${fecha}_Sniffer-Wific1_${listado[i]}.db`);
     
-        //const stmt = dbpc.prepare(`select * from PersonCounter Where Timestamp BETWEEN "${fecha} 07:00:00" and "${fecha} 22:00:00" ORDER BY Timestamp`).all();
     
         try{
             const stmt = dbwifi.prepare(`select * from ProbeRequestFrames Where Timestamp BETWEEN ? and ? ORDER BY Timestamp`);
@@ -130,7 +132,6 @@ async function inicio(){
     
         let dbwifi = new Database(`sqlite_databases/${fecha}/${listado[i]}/${fecha}_Sniffer-Wific6_${listado[i]}.db`);
     
-        //const stmt = dbpc.prepare(`select * from PersonCounter Where Timestamp BETWEEN "${fecha} 07:00:00" and "${fecha} 22:00:00" ORDER BY Timestamp`).all();
     
         try{
             const stmt = dbwifi.prepare(`select * from ProbeRequestFrames Where Timestamp BETWEEN ? and ? ORDER BY Timestamp`);
@@ -164,7 +165,6 @@ async function inicio(){
     
         let dbwifi = new Database(`sqlite_databases/${fecha}/${listado[i]}/${fecha}_Sniffer-Wific11_${listado[i]}.db`);
     
-        //const stmt = dbpc.prepare(`select * from PersonCounter Where Timestamp BETWEEN "${fecha} 07:00:00" and "${fecha} 22:00:00" ORDER BY Timestamp`).all();
     
         try{
             const stmt = dbwifi.prepare(`select * from ProbeRequestFrames Where Timestamp BETWEEN ? and ? ORDER BY Timestamp`);
@@ -194,6 +194,7 @@ async function inicio(){
     
 }   
 
+//Funcion principal
 async function main(){
 
     await inicio()

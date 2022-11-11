@@ -31,7 +31,7 @@ const main = () => {
 
 
 
-
+//Invoca el script shell todos los días a las 22 pasandole la fecha
 var job = new CronJob(
     '00 22 * * *',
     

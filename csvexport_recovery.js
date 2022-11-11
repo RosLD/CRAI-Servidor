@@ -171,10 +171,7 @@ const descargaryprocesar = async (fecha) => {
 
 
     await inicio();
-    /*door();
-    wifi();
-    ble();*/
-    //ble_trg_t = ble_trg +getFecha()+".csv"
+    
 
     
     console.log("Processing P Count csv")
@@ -201,16 +198,11 @@ const descargaryprocesar = async (fecha) => {
 
 }
 
+/*El script funciona como su homonimo offline, la diferencia es que este se llama 
+desde el script sqlite_exporter*/
 module.exports = {descargaryprocesar}
 
+/*Son necesarios dos por como está la informacion actualmente, los JSONs que se envian por mqtt y la informacion que se guarda en sqlite no tiene los mismos nombre
+y en lugar de cambiar formatos y despistar procesos posteriores he preferido dos scripts similares*/
 
-/*
-var job = new CronJob(
-    '00 22 * * *',
-    //'00 00 22 * * *',
-    main
-);
-
-console.log("Starting CRON job");
-job.start()*/
 

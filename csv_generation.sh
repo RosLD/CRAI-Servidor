@@ -6,9 +6,9 @@ else
     mkdir sqlite_databases
 fi
 
-fecha=$1 #Me la tiene que dar javascript
+fecha=$1 #Debe pasarse como parámetro
 
-echo "Im the sync that node lacks"
+#First create the folders
 cd sqlite_databases
 mkdir $fecha
 cd $fecha
@@ -20,7 +20,7 @@ mkdir Raspberry7
 mkdir Raspberry8
 cd ../..
 
-
+#Descargar las bases de datos por medio de zero tier
 echo "Getting DB from Raspberry 1"
 sshpass -f kalipass scp kali@10.147.18.203:~/Sniffer_Wifi/${fecha}_DatosBLE_Raspberry1.db sqlite_databases/${fecha}/Raspberry1/.
 sshpass -f kalipass scp kali@10.147.18.203:~/Sniffer_Wifi/${fecha}_Sniffer-Wific1_Raspberry1.db sqlite_databases/${fecha}/Raspberry1/.
@@ -52,6 +52,8 @@ sshpass -f kalipass scp kali@10.147.18.240:~/UPCT_TerabeePC/${fecha}_PersonCount
 
 echo "Backups complete now start with server csvs"
 
+#Antes de empezar con la recuperacion genera los csvs del día
 node csvexport_offline.js $fecha
 
+#Ahora toma las bases de datos para generar CSVs con estas
 node sqlite_exporter.js $fecha

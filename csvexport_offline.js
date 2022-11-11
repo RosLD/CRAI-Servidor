@@ -50,7 +50,7 @@ var query = {};
 let content = {}
 
 
-
+//Funcion para obtener los datos del sensor de puerta desde Mongo
 const door = async (puertadatos) => {
 
     pcount_trg_t = pcount_trg+getFecha()+".csv";
@@ -80,6 +80,7 @@ const door = async (puertadatos) => {
     
 }
 
+//Funcion para obtener los datos de Wifi desde Mongo
 const wifi = async (wifidatos) => {
 
     wifi_trg_t = wifi_trg+getFecha()+".csv";
@@ -111,7 +112,7 @@ const wifi = async (wifidatos) => {
    
 }
 
-
+//Funcion para obtener los datos de BLE desde Mongo
 const ble = async (bledatos) => {
 
     ble_trg_t = ble_trg+getFecha()+".csv";
@@ -147,6 +148,7 @@ const ble = async (bledatos) => {
 
 }
 
+//Funcion para controlar el flujo de trabajo de las funciones previas
 const inicio = async () => {
 
     await database.main()//Hace que el script de mongo se conecte
@@ -161,6 +163,7 @@ const inicio = async () => {
     
 }
 
+//Esta es la funcion principal
 const descargaryprocesaroffline = async (fecha) => {
 
     fechaobtener = fecha
@@ -169,10 +172,6 @@ const descargaryprocesaroffline = async (fecha) => {
 
 
     await inicio();
-    /*door();
-    wifi();
-    ble();*/
-    //ble_trg_t = ble_trg +getFecha()+".csv"
 
     
     console.log("Processing P Count csv")
@@ -204,13 +203,5 @@ const descargaryprocesaroffline = async (fecha) => {
 descargaryprocesaroffline(process.argv[2])
 
 
-/*
-var job = new CronJob(
-    '00 22 * * *',
-    //'00 00 22 * * *',
-    main
-);
 
-console.log("Starting CRON job");
-job.start()*/
 

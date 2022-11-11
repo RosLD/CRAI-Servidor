@@ -33,25 +33,4 @@ const store = (values) => {
 }
 
 
-
-/*const getcsv = (T1,T2) => {
-
-    let sql = `Select * from datos where Timestamp between "${T1}%" and "${T2}%" order by Timestamp`
-
-    //if(timestamp!='')   sql += ` and Timestamp like ${timestamp}`
-    
-
-    return new Promise((success, failure) => {
-    connection.query(sql, (err,result) => {
-        if(err) throw err;
-        //console.log(result)
-        
-        success(result);
-        //console.log(toReturn)
-    });
-    });
-
-}*/
-
-
 module.exports = {store};

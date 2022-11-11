@@ -5,13 +5,13 @@ const { MongoClient } = require('mongodb');
 const url = 'mongodb://212.128.44.50:27017'
 const dbName = 'CRAI-UPCT'; // ==BBDD SQL
 
-    client = new MongoClient(url);
+client = new MongoClient(url);
 var client;
 var db;
 
 
 
-// Database Name
+// Use this function to start connection with database
 async function main(){
 
     await client.connect();
@@ -26,7 +26,8 @@ const getDatabase = () => {
     return db;
 }
 
-const getCollection = (colec) => {   // == Table SQL
+//Use this function to get collection
+const getCollection = (colec) => {   // Colection is similar to Table SQL
     return db.collection(colec);
 }
 
