@@ -13,7 +13,7 @@ if (interval > 60){
     exit()
 }
 
-    
+
 
 
 const puertadatos = database.getCollection('DoorSensors')

@@ -17,7 +17,7 @@ const getFecha = () => {
 
 const main = () => {
 
-    exec(`./backupdownload.sh ${getFecha()}`, (error,stdout,stderr) => {
+    exec(`./csv_generation.sh ${getFecha()}`, (error,stdout,stderr) => {
 
         if(error){
             console.log(error)

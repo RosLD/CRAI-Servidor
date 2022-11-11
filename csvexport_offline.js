@@ -1,7 +1,7 @@
 const fs = require('fs');
-const { exec } = require("child_process");
+const { execSync } = require("child_process");
 
-var database = require("./models/database");
+var database = require("./models/async_mongo");
 
 var CronJob = require('cron').CronJob;
 
@@ -11,16 +11,10 @@ if (interval > 60){
 
     console.log("Max sampling period is 60!")
     exit()
+
 }
 
-    
 
-
-const puertadatos = database.getCollection('DoorSensors')
-const bledatos = database.getCollection('BLE2')
-const wifidatos = database.getCollection('wifi')
-
-//let cabecera = 'Fecha;Hora;Evento In-Out(1/0);Cont. D-In total;Cont. I-In total;Total IN;Cont. D-out total;Cont. I-Out total;Total OUT;Estimación nº Personas\r\n'
 let cabeceradoor = 'Fecha;Hora;NSeq;Sensor;Evento In-Out(1/0);Entradas Derecha;Salidas Derecha;Entradas Izquierda;Salidas Izquierda;Entradas Derecha 2;Salidas Derecha 2;Ocupacion estimada\r\n'
 let cabecerawifi = 'Fecha;Hora;Id;NSeq;Canal;SSID;MAC Origen;RSSI;Rate;HTC Cap;Vendor Specific;Extended Rates;Extended HTC;VHT Cap\r\n'
 
@@ -39,35 +33,34 @@ function pad(n, z){
     z = z || 2;
   return ('00' + n).slice(-z);
 }
+
+let fechaobtener = ""
   
 const getFecha = () => {
-  let d = new Date,
-  dformat =   [d.getFullYear(),
-              pad(d.getMonth()+1),
-              pad(d.getDate())].join('-');
+  
 
   //return dformat;
-  return process.argv[2]
+  //console.log("A fecha e: ",fechaobtener)
+  return fechaobtener
 } 
 
+var query = {};
 
-var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
-//var query = {"timestamp": {"$gte": `2022-10-21 07:00:00`, "$lt": `2022-10-21 22:00:00`}};
 
 let content = {}
 
 
-const door = () => {
+
+const door = async (puertadatos) => {
 
     pcount_trg_t = pcount_trg+getFecha()+".csv";
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
 
-    var cursor = puertadatos.find(query).sort({"timestamp":1});
-    
+    var cursor = await puertadatos.find(query).sort({"Timestamp":1});
     
     //console.log(cursor)
-    cursor.forEach(
+    await cursor.forEach(
         function(doc) {
             
             if(doc.timestamp !== undefined){
@@ -87,20 +80,20 @@ const door = () => {
     
 }
 
-const wifi = () => {
+const wifi = async (wifidatos) => {
 
     wifi_trg_t = wifi_trg+getFecha()+".csv";
 
     fs.writeFile(wifi_trg_t, cabecerawifi, { flag: 'w' }, err => {});
     
-    var cursor = wifidatos.find(query);
+    var cursor = await wifidatos.find(query);
     
     cursor.sort({timestamp:1}).allowDiskUse();
 
     console.log(`Saving Wifi data of the day`)
 
     
-    cursor.forEach(
+    await cursor.forEach(
         function(doc) {
             if(doc.timestamp !== undefined){
                 content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.id};${doc.nseq};${doc.canal};"${doc.ssid}";${doc.OrigMAC};${doc.rssi};${doc.rate};${doc.htccap};${doc.vendorspecific};${doc.extendedrates};${doc.extendedhtc};${doc.vhtcap}\r\n`
@@ -119,25 +112,26 @@ const wifi = () => {
 }
 
 
-const ble = () => {
+const ble = async (bledatos) => {
 
     ble_trg_t = ble_trg+getFecha()+".csv";
     
     fs.writeFile(ble_trg_t, cabecerable, { flag: 'w' }, err => {});
 
 
-    var cursor = bledatos.find(query);
+    var cursor = await bledatos.find(query);
     
     cursor.sort({timestamp:1}).allowDiskUse();
     
     console.log(`Saving BLE data of the day`)
 
-    cursor.forEach(
+    await cursor.forEach(
         function(doc) {
+            
             if(doc.timestamp !== undefined){
                 
                 content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.idRasp};${doc.nseq};${doc.mac};${doc.tipoMac};${doc.bleSize};${doc.rspSize};${doc.tipoADV};${doc.bleData};${doc.rssi}\r\n`
-                fs.writeFile(ble_trg_t, content, { flag: 'a' }, err => {
+                    fs.writeFile(ble_trg_t, content, { flag: 'a' }, err => {
                     
                 });
                 
@@ -153,46 +147,61 @@ const ble = () => {
 
 }
 
-const main = () => {
-    door();
-    wifi();
-    ble();
+const inicio = async () => {
 
-    setTimeout(()=> {
-
-        exec(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
-            if(error !== null){
-                console.log("Python error PC-> "+ error)
-            }
-            console.log(stdout.toString())
-        })
-        
-        
-        exec(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t}`,(error,stdout,stderr)=>{
-            if(error !== null){
-                console.log("Python error BLE-> "+ error)
-            }
-            console.log(stdout.toString())
-            console.log(stderr.toString())
-        })
-
-
-    },1000*60*60*2) //Dos horas de margen
+    await database.main()//Hace que el script de mongo se conecte
     
-    /*
-    exec(`python3.8 ./python/hd_offlinewifi.py ${wifi_trg_t} ${pcount_trg_t}`,(error,stdout,stderr)=>{
+    const puertadatos = database.getCollection('DoorSensors')
+    const bledatos = database.getCollection('BLE2')
+    const wifidatos = database.getCollection('wifi')
+
+    await door(puertadatos)
+    await ble(bledatos)
+    await wifi(wifidatos)
+    
+}
+
+const descargaryprocesaroffline = async (fecha) => {
+
+    fechaobtener = fecha
+
+    query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} 22:00:00`}};
+
+
+    await inicio();
+    /*door();
+    wifi();
+    ble();*/
+    //ble_trg_t = ble_trg +getFecha()+".csv"
+
+    
+    console.log("Processing P Count csv")
+    await execSync(`python3.8 ./python/hd_offlinepcount.py ${pcount_trg_t} 1`,(error,stdout,stderr)=>{
         if(error !== null){
-            console.log("Python error Wifi-> "+ error)
+            console.log("Python error PC-> "+ error)
+        }
+        console.log(stdout.toString())
+    })
+    
+    console.log("Processing BLE")
+    await execSync(`python3.8 ./python/hd_offlineBLE.py ${ble_trg_t} 1`,(error,stdout,stderr)=>{
+        if(error !== null){
+            console.log("Python error BLE-> "+ error)
         }
         console.log(stdout.toString())
         console.log(stderr.toString())
-    })*/
+    })
+    
+    console.log("Ya acabé")
 
+    process.exit()
+
+    
     
 
 }
 
-main();
+descargaryprocesaroffline(process.argv[2])
 
 
 /*
