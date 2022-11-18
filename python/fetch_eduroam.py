@@ -308,7 +308,7 @@ def crearcsv():
         c = c + 1
     # print(RRate)
     # Generamos el Dataframe con cada una de las peticiones que hemos realizado al servidor
-    file_name = "eduroam/Eduroam_" + time.strftime('%d%m%Y', time.localtime()) + ".csv"  # Nombre del archivo
+    file_name = "CRAI-Servidor/csv/eduroam/raw/Eduroam_" + time.strftime('%d%m%Y', time.localtime()) + ".csv"  # Nombre del archivo
     data = [timestamp, MACUSR, MACW, IPuser, IPAP, nombre, sistema, snr, TXframes, TXBytes, TRetries, TRate, RXframes,
             RXBytes, RRetries, RRate]
 

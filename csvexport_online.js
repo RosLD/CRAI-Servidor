@@ -1,7 +1,7 @@
 const fs = require('fs');
-const { exec } = require("child_process");
+const { execSync } = require("child_process");
 
-var database = require("./models/database");
+var database = require("./models/async_mongo");
 
 var CronJob = require('cron').CronJob;
 
@@ -11,20 +11,14 @@ if (interval > 60){
 
     console.log("Max sampling period is 60!")
     exit()
+
 }
 
 
+let cabeceradoor = 'Fecha;Hora;NSeq;Sensor;Evento In-Out(1/0);Entradas Derecha;Salidas Derecha;Entradas Izquierda;Salidas Izquierda;Entradas Derecha 2;Salidas Derecha 2;Ocupacion estimada\r\n'
+let cabecerawifi = 'Fecha;Hora;Id;NSeq;Canal;SSID;MAC Origen;RSSI;Rate;HTC Cap;Vendor Specific;Extended Rates;Extended HTC;VHT Cap\r\n'
 
-
-const puertadatos = database.getCollection('DoorSensors')
-const bledatos = database.getCollection('BLE2')
-const wifidatos = database.getCollection('wifi')
-
-//let cabecera = 'Fecha;Hora;Evento In-Out(1/0);Cont. D-In total;Cont. I-In total;Total IN;Cont. D-out total;Cont. I-Out total;Total OUT;Estimación nº Personas\r\n'
-let cabeceradoor = 'Fecha;Hora;Sensor;Evento In-Out(1/0);Entradas Derecha;Salidas Derecha;Entradas Izquierda;Salidas Izquierda;Entradas Derecha 2;Salidas Derecha 2\r\n'
-let cabecerawifi = 'Fecha;Hora;Id;Canal;SSID;MAC Origen;RSSI;Rate;HTC Cap;Vendor Specific;Extended Rates;Extended HTC;VHT Cap\r\n'
-
-let cabecerable = 'Fecha;Hora;Id;MAC;Tipo MAC;ADV Size;RSP Size;Tipo ADV;Advertisement;RSSI\r\n'
+let cabecerable = 'Fecha;Hora;Id;NSeq;MAC;Tipo MAC;ADV Size;RSP Size;Tipo ADV;Advertisement;RSSI\r\n'
 
 /* File targets for python scripts */
 wifi_trg = "csv/int/raw/wifi_"
@@ -39,14 +33,16 @@ function pad(n, z){
     z = z || 2;
   return ('00' + n).slice(-z);
 }
+
   
 const getFecha = () => {
-  let d = new Date,
-  dformat =   [d.getFullYear(),
+  
+    let d = new Date,
+    dformat =   [d.getFullYear(),
               pad(d.getMonth()+1),
               pad(d.getDate())].join('-');
 
-  return dformat;
+    return dformat;
 } 
 
 const getHora = () => {
@@ -76,24 +72,25 @@ const getInt = () => {
 
 let content = {}
 
-const door = () => {
+let hora, intervalo_hora = 0
 
-    pcount_trg_t = pcount_trg+getInt()+"-"+getHora()+".csv";
+
+//Funcion para obtener los datos del sensor de puerta desde Mongo
+const door = async (puertadatos) => {
+
+    pcount_trg_t = pcount_trg+intervalo_hora+"-"+hora+".csv";
 
     fs.writeFile(pcount_trg_t, cabeceradoor, { flag: 'w' }, err => {});    
+    var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} ${hora}:00`}};//, "$lt": `${getFecha()} 22:00:00`
 
-    /*var db = client.db("CRAI-UPCT");
-    var collection = db.collection("DoorSensors");*/    //var query = {"date": {"$gte": new Date(`${isodate()}Z05:00:00.000T`), "$lt": new Date(`${isodate()}Z20:00:00.000T`)}};//, "$lt": `${getFecha()} 22:00:00`
-    var query = {"timestamp": {"$gte": `${getFecha()} 07:00:00`, "$lt": `${getFecha()} ${getHora()}:00`}};//, "$lt": `${getFecha()} 22:00:00`
-    var cursor = puertadatos.find(query).sort({"timestamp":1});
-    
+    var cursor = await puertadatos.find(query).sort({"Timestamp":1});
     
     //console.log(cursor)
-    cursor.forEach(
+    await cursor.forEach(
         function(doc) {
             
             if(doc.timestamp !== undefined){
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.sensor};${doc.eventoIO ? 1 : 0};${doc.entradasSensorDer};${doc.salidasSensorDer};${doc.entradasSensorIzq};${doc.salidasSensorIzq};${doc.entradasSensorDer2};${doc.salidasSensorDer2}\r\n`
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.nseq};${doc.sensor};${doc.eventoIO ? 1 : 0};${doc.entradasSensorDer};${doc.salidasSensorDer};${doc.entradasSensorIzq};${doc.salidasSensorIzq};${doc.entradasSensorDer2};${doc.salidasSensorDer2};${doc.entradasTotal-doc.salidasTotal}\r\n`
                 fs.writeFile(pcount_trg_t, content, { flag: 'a' }, err => {});
             
             } 
@@ -103,31 +100,32 @@ const door = () => {
 
     
     
-    console.log("PC data saved: ",pcount_trg_t);
+    console.log("Person count data saved: ", pcount_trg_t);
 
         
     
 }
 
-const wifi = () => {
+//Funcion para obtener los datos de Wifi desde Mongo
+const wifi = async (wifidatos) => {
 
-    wifi_trg_t = wifi_trg+getInt()+"-"+getHora()+".csv";
+    wifi_trg_t = wifi_trg+intervalo_hora+"-"+hora+".csv";
 
     fs.writeFile(wifi_trg_t, cabecerawifi, { flag: 'w' }, err => {});
-
-    var query = {"timestamp": {"$gte": `${getFecha()} ${getInt()}:00`, "$lt": `${getFecha()} ${getHora()}:00`}};
-    //var query = {"timestamp": {"$gte": `2022-06-29 07:00:00`, "$lt": `2022-06-29 22:00:00`}};
     
-    var cursor = wifidatos.find(query);
+    var query = {"timestamp": {"$gte": `${getFecha()} ${intervalo_hora}:00`, "$lt": `${getFecha()} ${hora}:00`}};
+
+    var cursor = await wifidatos.find(query);
     
     cursor.sort({timestamp:1}).allowDiskUse();
 
+    console.log(`Saving Wifi data of the day`)
 
     
-    cursor.forEach(
+    await cursor.forEach(
         function(doc) {
             if(doc.timestamp !== undefined){
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.id};${doc.canal};${doc.ssid};${doc.OrigMAC};${doc.rssi};${doc.rate};${doc.htccap};${doc.vendorspecific};${doc.extendedrates};${doc.extendedhtc};${doc.vhtcap}\r\n`
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.id};${doc.nseq};${doc.canal};"${doc.ssid}";${doc.OrigMAC};${doc.rssi};${doc.rate};${doc.htccap};${doc.vendorspecific};${doc.extendedrates};${doc.extendedhtc};${doc.vhtcap}\r\n`
                 fs.writeFile(wifi_trg_t, content, { flag: 'a' }, err => {});
             
             }
@@ -137,32 +135,32 @@ const wifi = () => {
 
     
     
-    console.log("Wifi data saved: ",wifi_trg_t);
+    console.log("Wifi data saved: ", wifi_trg_t);
         
    
 }
 
+//Funcion para obtener los datos de BLE desde Mongo
+const ble = async (bledatos) => {
 
-const ble = () => {
-
-    ble_trg_t = ble_trg+getInt()+"-"+getHora()+".csv";
+    ble_trg_t = ble_trg+intervalo_hora+"-"+hora+".csv";
     
     fs.writeFile(ble_trg_t, cabecerable, { flag: 'w' }, err => {});
 
-
-    var query = {"timestamp": {"$gte": `${getFecha()} ${getInt()}:00`, "$lt": `${getFecha()} ${getHora()}:00`}};
-    var cursor = bledatos.find(query);
+    var query = {"timestamp": {"$gte": `${getFecha()} ${intervalo_hora}:00`, "$lt": `${getFecha()} ${hora}:00`}};
+    var cursor = await bledatos.find(query);
     
     cursor.sort({timestamp:1}).allowDiskUse();
     
-    
+    console.log(`Saving BLE data of the day`)
 
-    cursor.forEach(
+    await cursor.forEach(
         function(doc) {
+            
             if(doc.timestamp !== undefined){
                 
-                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.idRasp};${doc.mac};${doc.tipoMac};${doc.bleSize};${doc.rspSize};${doc.tipoADV};${doc.bleData};${doc.rssi}\r\n`
-                fs.writeFile(ble_trg_t, content, { flag: 'a' }, err => {
+                content = `${doc.timestamp.split(" ")[0]};${doc.timestamp.split(" ")[1]};${doc.idRasp};${doc.nseq};${doc.mac};${doc.tipoMac};${doc.bleSize};${doc.rspSize};${doc.tipoADV};${doc.bleData};${doc.rssi}\r\n`
+                    fs.writeFile(ble_trg_t, content, { flag: 'a' }, err => {
                     
                 });
                 
@@ -178,44 +176,62 @@ const ble = () => {
 
 }
 
-const main = () => {
-    door();
-    wifi();
-    ble();
+//Funcion para controlar el flujo de trabajo de las funciones previas
+const inicio = async () => {
 
-    //console.log(pcount_trg_t)
-    exec(`python3.8 ./python/hd_PCprocess.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
+    await database.main()//Hace que el script de mongo se conecte
+    
+    const puertadatos = database.getCollection('DoorSensors')
+    const bledatos = database.getCollection('BLE2')
+    const wifidatos = database.getCollection('wifi')
+
+    await door(puertadatos)
+    await ble(bledatos)
+    await wifi(wifidatos)
+    
+}
+
+//Esta es la funcion principal
+const descargaryprocesaronline = async () => {
+
+    hora = getHora()
+    intervalo_hora = getInt()
+
+    await inicio();
+
+    //A continuacion, se llaman a los scripts de Python
+    console.log("Processing P Count csv")
+    await execSync(`python3.8 ./python/hd_onlinepcount.py ${pcount_trg_t}`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error PC-> "+ error)
         }
         console.log(stdout.toString())
     })
     
-    //console.log(ble_trg_t)
-    exec(`python3.8 ./python/hd_detect.py ${ble_trg_t}`,(error,stdout,stderr)=>{
+    console.log("Processing BLE")
+    await execSync(`python3.8 ./python/hd_onlineBLE2.py ${ble_trg_t}`,(error,stdout,stderr)=>{
         if(error !== null){
             console.log("Python error BLE-> "+ error)
         }
         console.log(stdout.toString())
         console.log(stderr.toString())
     })
-
     
-
     
 
 }
 
 
-
-
 var job = new CronJob(
     `0,5,10,15,20,25,30,35,40,45,50,55 7-22 * * *`,
-    //'00 00 22 * * *',
-    main
+    descargaryprocesaronline
 );
 
 console.log("Starting CRON job");
 job.start()
+
+
+
+
 
 

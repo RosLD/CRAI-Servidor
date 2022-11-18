@@ -39,7 +39,7 @@ contador_raw = pd.read_csv(direccion, delimiter=';')
 
 def generateTimeSeriesByHour(data, initHour='7:00:00', endHour='21:55:00'):
     """Función que devuelve una Serie con un Timestamp espaciado en intervalos de 5 minutos dada una hora de comienzo y de fin"""
-    date = data["Timestamp"][0].date()
+    date = data["Timestamp"].iloc[0].date()
     start = str(date) + " " + initHour
     end = str(date) + " " + endHour
     timeSeries = pd.Series(pd.date_range(start, end, freq='1T'))
@@ -54,7 +54,7 @@ contador_raw['Timestamp'] = pd.to_datetime(contador_raw['Timestamp'], dayfirst=T
 contador_raw.replace({"Right2":"Right"},inplace=True)   #Rename sensor Right 2 as Right
 contador_raw.drop_duplicates(subset=['Timestamp','Sensor'],keep='first',inplace=True) #So if they got medition at the same time we remove
 #Remove keep alives
-#contador_raw = contador_raw[contador_raw['Sensor']!="KeepAlive"]
+contador_raw = contador_raw[contador_raw['Sensor']!="KeepAlive"]
 
 time_list = generateTimeSeriesByHour(contador_raw, endHour=major)
 zeroList = pd.Series(np.zeros(len(time_list)))

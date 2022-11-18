@@ -127,5 +127,5 @@ direccion_dst = "csv/off/csv_offline_filter"
 
 if sys.argv[2] == "2":
     direccion_dst = "csv/recover/csv_filter"
-direccion = direccion_dst+"/pcount_recover_filter_"+direccion.split("_")[1]
+direccion = direccion_dst+"/pcount_filter_"+direccion.split("_")[1]
 contador.to_csv(direccion,sep=";",index=False)

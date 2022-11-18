@@ -41,9 +41,9 @@ print(f'Hora inicio: {hora_inicio}')
 
 # Para localizar los CSVs
 # nombre_target = #"/home/servidoridiit1upct/CRAI-Servidor/csv/ble_"+fecha_diahoy+"_7-22.csv" #Nombre del archivo
-nombre_filter = trg_csv + "/ble_recover_filter_" + fecha_diahoy + "_samp" + str(
+nombre_filter = trg_csv + "/ble_filter_" + fecha_diahoy + "_samp" + str(
     sampling) + ".csv"
-nombre_resumen = trg_csv + "/ble_recover_resumen_" + fecha_diahoy +".csv"
+nombre_resumen = trg_csv + "/ble_resumen_" + fecha_diahoy +".csv"
 
 filter_cols = ['Indice int. muestreo', 'Timestamp int.', 'Raspberry', 'Timestamp inicial', 'Nº Mensajes', 'MAC',
                'Tipo MAC', 'Tipo ADV', 'BLE Size', 'RSP Size', 'BLE Data', 'RSSI promedio']
