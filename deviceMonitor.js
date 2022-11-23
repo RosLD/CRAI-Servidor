@@ -92,7 +92,7 @@ const main = () => {
                 
             }
 
-            if(sub == ''){
+            if(sub == "0 wifi antennas down"){
                 sub += "OK"
                 okCount += 1
             }
