@@ -111,6 +111,8 @@ const main = () => {
 
         if(okCount == 6){
             chain = "Todo OK"
+        }else{
+            botcrai.failureWarn(chain)
         }
         botcrai.botSendMessage(chain)
 

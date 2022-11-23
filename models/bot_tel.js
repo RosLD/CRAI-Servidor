@@ -15,6 +15,12 @@ const botSendMessage = (msgToBot) => {
 
 }
 
+const failureWarn = (msgToBot) => {
+
+  bot.sendMessage(process.env.bigwarn,msgToBot)
+
+}
+
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
 
@@ -24,4 +30,4 @@ bot.on('message', (msg) => {
 });
 
 botSendMessage("Telegram Monit Bot\n Monitorizacion basada en API EMQX")
-module.exports = {botSendMessage};
+module.exports = {botSendMessage,failureWarn};
