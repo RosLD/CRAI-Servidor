@@ -87,12 +87,17 @@ const main = () => {
                     count++;    
                 
                 
-                sub += `${count} wifi antennas down`
+                if(count > 0){
+
+                    sub += `${count} wifi antennas down`
+                    
+                }
+                
                 
                 
             }
 
-            if(sub == "0 wifi antennas down"){
+            if(sub == ""){
                 sub += "OK"
                 okCount += 1
             }
